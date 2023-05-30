@@ -1,3 +1,5 @@
+print('ThemeManager v1.0.1')
+
 local httpService = game:GetService("HttpService")
 local ThemeManager = {}
 ThemeManager.Folder = "LinoriaLibSettings"
