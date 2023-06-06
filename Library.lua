@@ -1,5 +1,4 @@
-print('Loading Linoria UI v2.11.7')
-
+print('Loading Linoria UI v2.11.8')
 
 -- violin-suzutsuki i love you !!!!!!
 
@@ -70,8 +69,10 @@ table.insert(
 				Hue = 0
 			end
 
+			--[[
 			Library.CurrentRainbowHue = Hue
 			Library.CurrentRainbowColor = Color3.fromHSV(Hue, 0.8, 1)
+			]]
 		end
 	end)
 )
@@ -93,6 +94,9 @@ local function onScreenTouch(Input, gameProcessedEvent)
 end
 
 local function ClickTouch(input)
+	if not Input then
+		return
+	end
 	if (pcall(function()
 		return input.UserInputState == Enum.UserInputState.Begin
 	end) and input.UserInputState == Enum.UserInputState.Begin) and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) and not isGameProcess then
