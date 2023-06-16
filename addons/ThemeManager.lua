@@ -237,7 +237,7 @@ function ThemeManager:ReloadCustomThemes()
 		local file = list[i]
 		if file:sub(-5) == ".json" then
 			pcall(function()
-				table.insert(out, file:split(a .. [[\]] .. z .. [[\]])[2]:split(".json")[1]:split(".JSON")[1])
+				table.insert(out, file:split(self.Folder .. "/themes")[2]:split(".json")[1]:split(".JSON")[1])
 			end)
 		end
 	end
