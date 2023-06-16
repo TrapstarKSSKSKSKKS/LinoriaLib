@@ -199,7 +199,7 @@ function ThemeManager:CreateThemeManager(groupbox)
 end
 
 function ThemeManager:GetCustomTheme(file)
-	local path = self.Folder .. "/themes/" .. file
+	local path = self.Folder .. "/themes/" .. file .. '.json'
 	if not isfile(path) then
 		return nil
 	end
@@ -237,7 +237,7 @@ function ThemeManager:ReloadCustomThemes()
 		local file = list[i]
 		if file:sub(-5) == ".json" then
 			pcall(function()
-				table.insert(out, file:split(self.Folder .. "/themes")[2]:split(".json")[1]:split(".JSON")[1])
+				table.insert(out, file:split(self.Folder .. "/themes/")[2]:split(".json")[1]:split(".JSON")[1])
 			end)
 		end
 	end
