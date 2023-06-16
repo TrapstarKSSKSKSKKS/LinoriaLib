@@ -59,7 +59,7 @@ ThemeManager.BuiltInThemes = {
 	["Trap Hub"] = {
 		9,
 		httpService:JSONDecode(
-			'{"FontColor":"ffffff","MainColor":"1c1c1c","AccentColor":"51565f","BackgroundColor":"141414","OutlineColor":"201c1c"}'
+			'{"FontColor":"ffffff","MainColor":"221c22","AccentColor":"aa10c7","BackgroundColor":"1e171e","OutlineColor":"141414"}'
 		),
 	},
 }
