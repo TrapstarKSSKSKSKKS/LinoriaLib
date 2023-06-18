@@ -1,6 +1,4 @@
-print('Loading Linoria UI v2.11.13')
-
-
+print('Loading Linoria UI v2.11.14')
 
 -- violin-suzutsuki i love you !!!!!!
 
@@ -1383,7 +1381,6 @@ do
 
 		local TextLabel = Library:CreateLabel({
 			Size = Center and UDim2.new(1, 0, 0, 15) or UDim2.new(1, -4, 0, 15),
-			Position = Center and UDim2.new(0, 4, 0, 15) or UDim2.new(),
 			TextSize = 14,
 			Text = Text,
 			TextWrapped = DoesWrap or false,
@@ -3328,7 +3325,7 @@ function Library:CreateWindow(...)
 
 			local GroupboxLabel = Library:CreateLabel({
 				Size = UDim2.new(1, 0, 0, 18),
-				Position = UDim2.new(0, 4, 0, 2),
+				Position = UDim2.new(0, 0, 0, 2),
 				TextSize = 14,
 				Text = Info.Name,
 				TextXAlignment = Enum.TextXAlignment.Center,
