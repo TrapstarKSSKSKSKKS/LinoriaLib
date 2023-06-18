@@ -1,4 +1,4 @@
-print('Loading Linoria UI v2.11.8')
+print('Loading Linoria UI v2.11.12')
 
 -- violin-suzutsuki i love you !!!!!!
 
@@ -1373,18 +1373,18 @@ do
 		})
 	end
 
-	function Funcs:AddLabel(Text, DoesWrap)
+	function Funcs:AddLabel(Text, DoesWrap, Center)
 		local Label = {}
 
 		local Groupbox = self
 		local Container = Groupbox.Container
 
 		local TextLabel = Library:CreateLabel({
-			Size = UDim2.new(1, -4, 0, 15),
+			Size = Center and UDim2.new(1, 0, 0, 15) or UDim2.new(1, -4, 0, 15),
 			TextSize = 14,
 			Text = Text,
 			TextWrapped = DoesWrap or false,
-			TextXAlignment = Enum.TextXAlignment.Left,
+			TextXAlignment = Center and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left,
 			ZIndex = 5,
 			Parent = Container,
 		})
@@ -3042,11 +3042,7 @@ function Library:CreateWindow(...)
 		Config.Position = UDim2.fromOffset(175, 50)
 	end
 	if typeof(Config.Size) ~= 'UDim2' then
-		if game.Players.LocalPlayer.PlayerGui:FindFirstChild('TouchGui') then
-			Config.Size = UDim2.fromOffset(400, 450)
-		else
-			Config.Size = UDim2.fromOffset(550, 600)
-		end
+		Config.Size = UDim2.fromOffset(550, 600)
 	end
 
 	if Config.Center then
@@ -3625,9 +3621,9 @@ function Library:CreateWindow(...)
 
 		if Toggled then
 			-- A bit scuffed, but if we're going from not toggled -> toggled we want to show the frame immediately so that the fade is visible.
-			if game.Players.LocalPlayer.PlayerGui:FindFirstChild('TouchGui') then
+			if InputService.TouchEnabled and not InputService.KeyboardEnabled and not InputService.MouseEnabled then
 				Outer.Size = UDim2.fromOffset(400, 450)
-			else
+			elseif not InputService.TouchEnabled and InputService.KeyboardEnabled and InputService.MouseEnabled then
 				Outer.Size = UDim2.fromOffset(550, 600)
 			end
 			Outer.Visible = true
