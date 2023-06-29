@@ -1,4 +1,4 @@
-print('Loading Linoria UI v2.11.14')
+print('Loading Linoria UI v2.12.17')
 
 -- violin-suzutsuki i love you !!!!!!
 
@@ -16,10 +16,15 @@ local Mouse = LocalPlayer:GetMouse()
 local ProtectGui = protectgui or (syn and syn.protect_gui) or function() end
 
 local ScreenGui = Instance.new('ScreenGui')
---ProtectGui(ScreenGui)
-
+ProtectGui(ScreenGui)
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-ScreenGui.Parent = CoreGui
+if gethui then
+	ScreenGui.Parent = gethui()
+elseif CoreGui:FindFirstChild('RobloxGui') then
+	ScreenGui.Parent = CoreGui:FindFirstChild('RobloxGui')
+else
+	ScreenGui.Parent = CoreGui
+end
 
 local Toggles = {}
 local Options = {}
@@ -338,9 +343,21 @@ function Library:MapValue(Value, MinA, MaxA, MinB, MaxB)
 	return (1 - ((Value - MinA) / (MaxA - MinA))) * MinB + ((Value - MinA) / (MaxA - MinA)) * MaxB
 end
 
+local TextBoundsCache = {}
+
 function Library:GetTextBounds(Text, Font, Size, Resolution)
-	local Bounds = TextService:GetTextSize(Text, Size, Font, Resolution or Vector2.new(1920, 1080))
-	return Bounds.X, Bounds.Y
+	if not TextService then
+		return 0, 0
+	end
+
+	local CleanText = Text:gsub('<[^>]+>', '')
+
+	if not TextBoundsCache[CleanText] then
+		local Bounds = TextService:GetTextSize(CleanText, Size, Font, Resolution or Vector2.new(1920, 1080))
+		TextBoundsCache[CleanText] = Bounds
+	end
+
+	return TextBoundsCache[CleanText].X, TextBoundsCache[CleanText].Y
 end
 
 function Library:GetDarkerColor(Color)
@@ -1373,6 +1390,62 @@ do
 		})
 	end
 
+	function Funcs:AddParagrafh(Text)
+		local Paragrafh = {}
+
+		local Groupbox = self
+		local Container = Groupbox.Container
+
+		--[[
+		local TextLabel = Instance.new('TextLabel')
+		TextLabel.Size = UDim2.new(1, -4, 0, 15)
+		TextLabel.TextSize = 14
+		TextLabel.Text = Text
+		TextLabel.TextWrapped = true
+		TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+		TextLabel.ZIndex = 5
+		TextLabel.Parent = Container
+		]]
+		--[[
+		local TextLabel = Library:Create('TextLabel', {
+			Size = UDim2.new(1, -4, 0, 15),
+			TextSize = 14,
+			Text = Text,
+			TextWrapped = true,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			ZIndex = 5,
+			Parent = Container,
+		})
+		]]
+		--[[
+		local TextLabel = Library:CreateLabel({
+			Size = UDim2.new(1, -4, 0, 15),
+			TextSize = 14,
+			Text = Text,
+			TextWrapped = DoesWrap,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			ZIndex = 5,
+			Parent = Container,
+		})
+		]]
+
+		function Paragrafh:SetText(Text)
+			TextLabel.Text = Text
+
+			--local Y = select(2, Library:GetTextBounds(Text, Library.Font, 14, Vector2.new(TextLabel.AbsoluteSize.X, math.huge)))
+			--TextLabel.Size = UDim2.new(1, -4, 0, Y)
+			-- TextLabel.Size = UDim2.new(1, -4, 0, TextLabel.TextBounds.Y)
+
+			-- Groupbox:Resize()
+		end
+
+		Groupbox:AddBlank(5)
+		Paragrafh:SetText(Text)
+		-- Groupbox:Resize()
+
+		return Paragrafh
+	end
+
 	function Funcs:AddLabel(Text, DoesWrap, Center)
 		local Label = {}
 
@@ -2088,10 +2161,10 @@ do
 				DisplayLabel.Text = string.format('%s/%s', Slider.Value .. Suffix, Slider.Max .. Suffix)
 			end
 
-			local X = math.ceil(Library:MapValue(Slider.Value, Slider.Min, Slider.Max, 0, Slider.MaxSize))
+			local X = math.ceil(Library:MapValue(Slider.Value, Slider.Min, Slider.Max, 0, SliderInner.AbsoluteSize.X))
 			Fill.Size = UDim2.new(0, X, 1, 0)
 
-			HideBorderRight.Visible = not (X == Slider.MaxSize or X == 0)
+			HideBorderRight.Visible = not (X == SliderInner.AbsoluteSize.X or X == 0)
 		end
 
 		function Slider:OnChanged(Func)
@@ -2109,7 +2182,7 @@ do
 		end
 
 		function Slider:GetValueFromXOffset(X)
-			return Round(Library:MapValue(X, 0, Slider.MaxSize, Slider.Min, Slider.Max))
+			return Round(Library:MapValue(X, 0, SliderInner.AbsoluteSize.X, Slider.Min, Slider.Max))
 		end
 
 		function Slider:SetValue(Str)
@@ -2136,7 +2209,7 @@ do
 
 				while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) or touchStarted do
 					local nMPos = Mouse.X
-					local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize)
+					local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, SliderInner.AbsoluteSize.X)
 
 					local nValue = Slider:GetValueFromXOffset(nX)
 					local OldValue = Slider.Value
@@ -2188,7 +2261,7 @@ do
 
 		local Dropdown = {
 			Values = Info.Values,
-			Value = Info.Multi and {},
+			Value = Info.Multi and {} or '',
 			Multi = Info.Multi,
 			Type = 'Dropdown',
 			SpecialType = Info.SpecialType, -- can be either 'Player' or 'Team'
@@ -2576,8 +2649,8 @@ do
 					end
 				end
 			else
-				if not Val then
-					Dropdown.Value = nil
+				if not Val or not table.find(Dropdown.Values, Val) then
+					Dropdown.Value = ''
 				elseif table.find(Dropdown.Values, Val) then
 					Dropdown.Value = Val
 				end
@@ -2626,13 +2699,13 @@ do
 		if type(Info.Default) == 'string' then
 			local Idx = table.find(Dropdown.Values, Info.Default)
 			if Idx then
-				table.insert(Defaults, Idx)
+				table.insert(Defaults, Info.Default)
 			end
 		elseif type(Info.Default) == 'table' then
 			for _, Value in pairs(Info.Default) do
 				local Idx = table.find(Dropdown.Values, Value)
 				if Idx then
-					table.insert(Defaults, Idx)
+					table.insert(Defaults, Value)
 				end
 			end
 		elseif type(Info.Default) == 'number' and Dropdown.Values[Info.Default] ~= nil then
@@ -2640,29 +2713,31 @@ do
 		end
 
 		if next(Defaults) then
-			for i = 1, #Defaults do
-				local Index = Defaults[i]
+			for _, Value in pairs(Defaults) do
 				if Info.Multi then
-					local Value = Dropdown.Values[Index]
 					if not table.find(Dropdown.Value, Value) then
 						table.insert(Dropdown.Value, Value)
 					end
 				else
-					Dropdown.Value = Dropdown.Values[Index]
+					Dropdown.Value = Value
 				end
-
+				
 				if not Info.Multi then
 					break
 				end
 			end
-
 			Dropdown:BuildDropdownList()
 			Dropdown:Display()
 		end
 
 		Groupbox:AddBlank(Info.BlankSize or 5)
 		Groupbox:Resize()
-
+		--[[
+		table.foreach(Defaults, print)
+		print(#Defaults >= 1 and Defaults or Dropdown.Multi and {} or '', Info.Text)
+		Dropdown:SetValue(#Defaults >= 1 and Defaults or Dropdown.Multi and {} or '')
+		Dropdown:Display()
+        ]]
 		Options[Idx] = Dropdown
 
 		return Dropdown
@@ -2907,7 +2982,7 @@ end
 function Library:SetWatermark(Text)
 	local X, Y = Library:GetTextBounds(Text, Library.Font, 14)
 	Library.Watermark.Size = UDim2.new(0, X + 15, 0, (Y * 1.5) + 3)
-	Library:SetWatermarkVisibility(true)
+	-- Library:SetWatermarkVisibility(true)
 
 	Library.WatermarkText.Text = Text
 end
@@ -2974,6 +3049,7 @@ function Library:Notify(Text, Time, inf)
 		Text = Text,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextSize = 14,
+		RichText = true,
 		ZIndex = 103,
 		Parent = InnerFrame,
 	})
@@ -3205,30 +3281,49 @@ function Library:CreateWindow(...)
 			Parent = TabContainer,
 		})
 
-		local LeftSide = Library:Create('ScrollingFrame', {
+		local DoubleSide = Library:Create('ScrollingFrame', {
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			Position = UDim2.new(0, 8 - 1, 0, 8 - 1),
-			Size = UDim2.new(0.5, -12 + 2, 0, 507 + 2),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(0.5, 0, 0.5, 0),
+			Size = UDim2.new(1, -12 + 2, 0, 507 + 2),
 			CanvasSize = UDim2.new(0, 0, 0, 0),
-			BottomImage = '',
-			TopImage = '',
-			ScrollBarThickness = 0,
+			TopImage = 'rbxasset://textures/ui/Scroll/scroll-middle.png',
+			BottomImage = 'rbxasset://textures/ui/Scroll/scroll-middle.png',
+			ScrollBarImageColor3 = Library.AccentColor,
+			ScrollBarThickness = 1.5,
 			ZIndex = 2,
 			Parent = TabFrame,
 		})
 
-		local RightSide = Library:Create('ScrollingFrame', {
+		Library:AddToRegistry(DoubleSide, {
+			ScrollBarImageColor3 = 'AccentColor',
+		})
+
+		local LeftSide = Library:Create('Frame', {
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			Position = UDim2.new(0, 8 - 1, 0, 8 - 1),
+			Size = UDim2.new(0.5, -12 + 2, 0, 507 + 2),
+			--CanvasSize = UDim2.new(0, 0, 0, 0),
+			--BottomImage = '',
+			--TopImage = '',
+			--ScrollBarThickness = 0,
+			ZIndex = 2,
+			Parent = DoubleSide,
+		})
+
+		local RightSide = Library:Create('Frame', {
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Position = UDim2.new(0.5, 4 + 1, 0, 8 - 1),
 			Size = UDim2.new(0.5, -12 + 2, 0, 507 + 2),
-			CanvasSize = UDim2.new(0, 0, 0, 0),
-			BottomImage = '',
-			TopImage = '',
-			ScrollBarThickness = 0,
+			--CanvasSize = UDim2.new(0, 0, 0, 0),
+			--BottomImage = '',
+			--TopImage = '',
+			--ScrollBarThickness = 0,
 			ZIndex = 2,
-			Parent = TabFrame,
+			Parent = DoubleSide,
 		})
 
 		Library:Create('UIListLayout', {
@@ -3249,7 +3344,9 @@ function Library:CreateWindow(...)
 
 		for _, Side in pairs({ LeftSide, RightSide }) do
 			Side:WaitForChild('UIListLayout'):GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
-				Side.CanvasSize = UDim2.fromOffset(0, Side.UIListLayout.AbsoluteContentSize.Y)
+				local maxContentSize = math.max(LeftSide.UIListLayout.AbsoluteContentSize.Y, RightSide.UIListLayout.AbsoluteContentSize.Y)
+				DoubleSide.CanvasSize = UDim2.fromOffset(0, maxContentSize + 20)
+				--DoubleSide.CanvasSize = UDim2.fromOffset(0, (LeftSide.UIListLayout.AbsoluteContentSize.Y + RightSide.UIListLayout.AbsoluteContentSize.Y) / 1.5)
 			end)
 		end
 
@@ -3289,6 +3386,7 @@ function Library:CreateWindow(...)
 				BorderMode = Enum.BorderMode.Inset,
 				Size = UDim2.new(1, 0, 0, 507 + 2),
 				ZIndex = 2,
+				-- AutomaticSize = 2,
 				Parent = Info.Side == 1 and LeftSide or RightSide,
 			})
 
@@ -3349,9 +3447,11 @@ function Library:CreateWindow(...)
 
 			function Groupbox:Resize()
 				local Size = 0
+				local ContainerChildren = Groupbox.Container:GetChildren()
 
-				for _, Element in ipairs(Groupbox.Container:GetChildren()) do
-					if (not Element:IsA('UIListLayout')) and Element.Visible then
+				for i = 1, #ContainerChildren do
+					local Element = ContainerChildren[i]
+					if not Element:IsA('UIListLayout') and Element.Visible then
 						Size = Size + Element.Size.Y.Offset
 					end
 				end
@@ -3360,6 +3460,7 @@ function Library:CreateWindow(...)
 			end
 
 			Groupbox.Container = Container
+
 			setmetatable(Groupbox, BaseGroupbox)
 
 			Groupbox:AddBlank(3)
