@@ -100,7 +100,7 @@ function ThemeManager:ThemeUpdate()
 end
 
 function ThemeManager:LoadDefault()
-	local theme = "BBot"
+	local theme = "Trap Hub"
 	local content = isfile(self.Folder .. "/themes/default.txt") and readfile(self.Folder .. "/themes/default.txt")
 
 	local isDefault = true
