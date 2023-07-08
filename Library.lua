@@ -1,4 +1,4 @@
-print('Loading Linoria UI v2.12.17')
+print('Loading Linoria UI v2.12.19')
 
 -- violin-suzutsuki i love you !!!!!!
 
@@ -1509,6 +1509,7 @@ do
 				Obj.Func = Props.Func
 				Obj.DoubleClick = Props.DoubleClick
 				Obj.Tooltip = Props.Tooltip
+				Obj.Risky = Props.Risky
 			else
 				Obj.Text = select(1, ...)
 				Obj.Func = select(2, ...)
@@ -1546,6 +1547,12 @@ do
 				ZIndex = 6,
 				Parent = Inner,
 			})
+
+			if Button.Risky then
+				Library:RemoveFromRegistry(Label)
+				Label.TextColor3 = Library.RiskColor
+				Library:AddToRegistry(Label, { TextColor3 = 'RiskColor' })
+			end
 
 			Library:Create('UIGradient', {
 				Color = ColorSequence.new({
@@ -2721,7 +2728,7 @@ do
 				else
 					Dropdown.Value = Value
 				end
-				
+
 				if not Info.Multi then
 					break
 				end
