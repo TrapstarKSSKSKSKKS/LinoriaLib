@@ -11,6 +11,7 @@ local RunService = game:GetService('RunService')
 local TweenService = game:GetService('TweenService')
 local RenderStepped = RunService.RenderStepped
 local LocalPlayer = Players.LocalPlayer
+local camera = workspace.CurrentCamera
 local Mouse = LocalPlayer:GetMouse()
 
 local ProtectGui = protectgui or (syn and syn.protect_gui) or function() end
@@ -158,6 +159,19 @@ function Library:SafeCallback(f, ...)
 
 		return Library:Notify(event:sub(i + 1), 3)
 	end
+end
+
+local function GetResizeUI()
+	local X, Y = 550, 600
+	local offset = 20
+	local camX, camY = camera.ViewportSize.X, camera.ViewportSize.Y
+	if camY < Y + offset then
+		Y = camY - offset
+	end
+	if camX < X then
+		X = camX - offset
+	end
+	return X, Y
 end
 
 function Library:AttemptSave()
@@ -444,6 +458,8 @@ function Library:Unload()
 	if Library.OnUnload then
 		Library.OnUnload()
 	end
+
+	Library.Unloaded = true
 
 	ScreenGui:Destroy()
 end
@@ -3293,7 +3309,7 @@ function Library:CreateWindow(...)
 			BorderSizePixel = 0,
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.new(0.5, 0, 0.5, 0),
-			Size = UDim2.new(1, -12 + 2, 0, 507 + 2),
+			Size = UDim2.new(1, -12 + 2, 1, 0),
 			CanvasSize = UDim2.new(0, 0, 0, 0),
 			TopImage = 'rbxasset://textures/ui/Scroll/scroll-middle.png',
 			BottomImage = 'rbxasset://textures/ui/Scroll/scroll-middle.png',
@@ -3311,7 +3327,7 @@ function Library:CreateWindow(...)
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Position = UDim2.new(0, 8 - 1, 0, 8 - 1),
-			Size = UDim2.new(0.5, -12 + 2, 0, 507 + 2),
+			Size = UDim2.new(0.5, -12 + 2, 1, 0),
 			--CanvasSize = UDim2.new(0, 0, 0, 0),
 			--BottomImage = '',
 			--TopImage = '',
@@ -3324,7 +3340,7 @@ function Library:CreateWindow(...)
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Position = UDim2.new(0.5, 4 + 1, 0, 8 - 1),
-			Size = UDim2.new(0.5, -12 + 2, 0, 507 + 2),
+			Size = UDim2.new(0.5, -12 + 2, 1, 0),
 			--CanvasSize = UDim2.new(0, 0, 0, 0),
 			--BottomImage = '',
 			--TopImage = '',
@@ -3725,16 +3741,26 @@ function Library:CreateWindow(...)
 		local FadeTime = Config.MenuFadeTime
 		Fading = true
 		Toggled = not Toggled
+		Library.Toggled = Toggled
 		ModalElement.Modal = Toggled
 
 		if Toggled then
+			--[[
 			-- A bit scuffed, but if we're going from not toggled -> toggled we want to show the frame immediately so that the fade is visible.
 			if InputService.TouchEnabled and not InputService.KeyboardEnabled and not InputService.MouseEnabled then
-				Outer.Size = UDim2.fromOffset(400, 450)
+				Outer.Szie = UDim2.fromOffset(400, 450)
 			elseif not InputService.TouchEnabled and InputService.KeyboardEnabled and InputService.MouseEnabled then
 				Outer.Size = UDim2.fromOffset(550, 600)
 			end
+			]]
+			Outer.Size = UDim2.fromOffset(GetResizeUI())
 			Outer.Visible = true
+
+			while Toggled and ScreenGui.Parent do
+				Outer.Size = UDim2.fromOffset(GetResizeUI())
+				RenderStepped:Wait()
+				wait()
+			end
 
 			--[[
 			task.spawn(function()
