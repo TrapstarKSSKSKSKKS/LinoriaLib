@@ -1,3 +1,5 @@
+print('Loading SaveManager v1.0.1')
+
 local httpService = game:GetService("HttpService")
 
 local SaveManager = {}
